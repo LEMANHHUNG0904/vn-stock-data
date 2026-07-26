@@ -1,113 +1,168 @@
-# VN Stock Daily Analyst
+# AI Analyst
 
-## Mục tiêu
-
-Mỗi ngày sau khi `stock_data.csv` được cập nhật, chạy phân tích và tạo **1 report 1 trang dạng HTML** với khuyến nghị đầu tư cổ phiếu nào trong 10 mã theo dõi.
-
----
-
-## Data
-
-- **File input**: `data/stock_data.csv`
-- **Cột**: `Date, Ticker, Open, High, Low, Close, Volume`
-- **Config**: đọc `config.yaml` để lấy danh sách tickers và các tham số — KHÔNG hardcode
-- **Lịch sử**: 30 ngày gần nhất, append hàng ngày
+AI Analyst is a unified analytics platform that automates the full analytical workflow:
+**Business Question -> Data Cleaning -> Validation -> Analysis -> Prediction -> Report**.
+It covers descriptive, diagnostic, and predictive analytics with HTML/PPTX output.
 
 ---
 
-## Nhiệm vụ khi được gọi
+## Architecture
 
-### Bước 0 — Kiểm tra data trước khi chạy
-
-**0a — Kiểm tra data có tồn tại không:**
-- Nếu `data/stock_data.csv` không tồn tại → báo lỗi và dừng.
-
-**0b — Kiểm tra data có fresh không:**
-- Đọc ngày mới nhất trong `data/stock_data.csv` (cột `Date`)
-- Nếu ngày mới nhất cách hôm nay quá 3 ngày → báo "Data cũ ({ngày}), có thể fetch bị lỗi. Dừng." và thoát.
-
-**0c — Kiểm tra đã phân tích chưa:**
-- Đọc ngày trong `logs/last_analyzed.txt` (nếu file tồn tại)
-- Nếu `last_analyzed` == ngày mới nhất trong CSV → báo "Đã phân tích data này rồi. Dừng." và thoát.
-- Nếu khác hoặc chưa có file → tiếp tục.
-
-### Bước 1 — Đọc và tính toán
-
-Đọc `data/stock_data.csv` — dùng **toàn bộ data có sẵn**, không giới hạn số ngày.
-
-Tính các chỉ số sau cho từng ticker:
-
-- **Return (toàn kỳ)**: % thay đổi Close từ ngày đầu tiên đến ngày mới nhất trong file
-- **Return 30D**: % thay đổi Close 30 ngày gần nhất (nếu có đủ data)
-- **Volatility**: độ lệch chuẩn của daily return (%)
-- **Trend**: slope của Close (tăng / giảm / sideway)
-- **Volume trend**: volume trung bình 7 ngày cuối so với toàn kỳ
-
-Lưu kết quả vào `data/pipeline/stock_metrics.json`.
-
-### Bước 2 — Xếp hạng và khuyến nghị
-
-Dựa trên metrics, xếp hạng 10 mã theo tiêu chí:
-- Return cao
-- Volatility thấp (risk-adjusted)
-- Trend đang tăng
-
-Phân loại thành 3 nhóm:
-- ✅ **Nên xem xét** (top 3)
-- ⚠️ **Theo dõi thêm** (mid)
-- ❌ **Tránh / chờ** (bottom)
-
-### Bước 3 — Tạo HTML report 1 trang
-
-Dùng **html-report skill** và **story-builder agent** để tạo report tại:
-`data/reports/stock_report_{YYYY-MM-DD}.html`
-
-**Report cần có:**
-- Tiêu đề: "VN Stock Daily Briefing — {ngày hôm nay}"
-- Bảng tóm tắt 10 mã: Return 30D | Volatility | Trend | Khuyến nghị
-- 1 chart: performance comparison (Close normalized về 100 tại ngày đầu)
-- Section "Top picks hôm nay" — 3 mã với lý do ngắn gọn (2-3 câu mỗi mã)
-- Giữ ngắn gọn: **1 trang, không scroll dài**
-
----
-
-## Agents liên quan
-
-Hệ thống agent nằm tại: `./ai_analyst`
-
-Sử dụng các agent sau từ folder đó:
-- **descriptive-analyst** — tính metrics, trend
-- **story-builder** — viết narrative khuyến nghị
-- **visualizer** — tạo chart performance
-- **html-report skill** — render HTML output
-
-Đọc `./ai_analyst/CLAUDE.md` để hiểu conventions trước khi dùng.
-
----
-
-## Output
+Follows Anthropic's Claude Code component architecture. **LLM is the only brain** — no intent classifier, no state machine. Claude reads descriptions and self-decides dispatch.
 
 ```
-github_actions/
-└── data/
-    ├── stock_data.csv          ← input (do GitHub Actions fetch)
-    ├── pipeline/
-    │   └── stock_metrics.json  ← intermediate
-    └── reports/
-        └── stock_report_YYYY-MM-DD.html  ← output cuối
++------------------------------------------------------------------+
+|                      CLAUDE CODE CORE                             |
+|   Agentic Loop + Built-in Tools (Read, Edit, Bash, Grep...)     |
++------------------------------------------------------------------+
+        |           |          |          |         |         |
+   CLAUDE.md    Skills    Subagents    Hooks      MCP    Plugins
+   (Context)   (Knowledge) (Workers)  (Auto)   (External) (Package)
+```
+
+### Components
+
+| Component | Count | Location |
+|-----------|-------|----------|
+| Main Agent | 1 | `CLAUDE.md` (this file) |
+| Subagents | 8 | `.claude/agents/` |
+| Skills | 24 | `.claude/skills/` |
+| Hooks | via | `.claude/settings.json` |
+| MCP | via | `.mcp.json` |
+
+### Project-Specific Layers
+
+| Layer | Purpose |
+|-------|---------|
+| `helpers/` | Python utilities (validation, charts, stats) |
+| `themes/` | Visual theming (colors, typography, brands) |
+| `knowledge/` | Persistent memory (datasets, metrics, history) |
+| `config/` | System config (registry, pipelines, domains) |
+| `data/` | Runtime data (raw -> cleaned -> reports) |
+| `scripts/` | Execution scripts (parallel runner, tests) |
+
+---
+
+## Key Principles
+
+1. **Disk-driven pipeline** — Each step writes JSON to disk. Next step reads from disk. No conversational state dependency.
+2. **Single entry point** — User provides data + question. System handles everything.
+3. **Conclusion-first** — Every finding, chart title, headline leads with the insight, not the metric label.
+4. **Clean once, read many** — Phase 1.5 decides: (A) skip if `data/cleaned/{type}/{stem}_cleaned.xlsx` already exists, (B) skip if raw file scores Grade A with zero issues (already clean — use raw directly), (C) otherwise run `data-prep` skill and write cleaned file. All Phase 2+ agents read from whichever file was selected — never re-clean independently.
+5. **Validation before analysis** — Never analyze data without verifying integrity first.
+6. **Theme-consistent output** — All visuals follow a single theme system (customizable per brand).
+7. **Resumable pipeline** — Explicit state tracking. Fail mid-pipeline -> resume from last checkpoint.
+8. **Parallel where possible** — Independent model training runs simultaneously.
+
+---
+
+## Critical Rules
+
+### present_files
+Skills communicate ONLY through disk files. Never through conversation context.
+
+```
+[Skill A] --writes--> data/pipeline/{stem}/output_a.json
+[Skill B] --reads-->  data/pipeline/{stem}/output_a.json
+          --writes--> data/pipeline/{stem}/output_b.json
+[Skill C] --reads-->  data/pipeline/{stem}/output_b.json
+          --writes--> data/reports/{type}/{stem}/report.html
+```
+
+### no conversational state
+Do NOT rely on conversation history for data passing between pipeline steps. All intermediate results must be persisted to `data/pipeline/` as JSON files. Each skill reads its inputs from disk and writes its outputs to disk.
+
+### run_context
+Every pipeline execution operates within a run context tied to the input file stem. All outputs go to `data/pipeline/{stem}/`. This ensures:
+- Multiple analyses can coexist
+- Runs are resumable from any checkpoint
+- No cross-contamination between datasets
+
+---
+
+## Heritage
+
+This project consolidates three prior codebases:
+
+| Source | Inherited |
+|--------|-----------|
+| `analysis_agents/` | Descriptive/diagnostic pipeline, skill format, HTML/PPTX output, SCQA framework |
+| `predictive_agents/` | 3 ML pipelines (forecasting, regression, classification), parallel execution |
+| `ai-analyst-plugin-master/` | Validation framework, confidence scoring, chart helpers, theme system, registry pattern |
+
+### Lean Refactor
+
+Reduced from 34 → 24 skills by removing redundancy:
+- **Deleted (7):** router (inlined into triage-report), setup, log-correction, model-monitor, state-manage, view-history, view-metrics
+- **Merged into agents (3):** predictive-bridge → predictive-trainer, context-builder + stakeholder-comms → story-builder
+- **Simplified:** question-framer no longer generates hypotheses (diagnostic-investigator owns this)
+
+---
+
+## Directory Structure
+
+```
+ai_analyst/
+├── .claude/
+│   ├── agents/          # 8 subagents (isolated workers)
+│   ├── skills/          # 24 skills (lean — redundant/overlapping skills merged or removed)
+│   ├── rules/           # Path-specific rules
+│   ├── output-styles/   # Response format configs
+│   └── settings.json    # Hooks configuration
+├── .mcp.json            # External service connections
+├── CLAUDE.md            # This file (context loaded every session)
+├── helpers/             # Python utilities
+│   ├── validation/      # 4-layer validation + confidence scoring
+│   ├── charts/          # Chart generation helpers
+│   └── stats/           # Statistical utilities
+├── themes/              # Visual theming system
+├── knowledge/           # Persistent memory across sessions
+├── config/              # Registry, pipelines, domain rules
+├── data/
+│   ├── raw/             # Original uploaded files
+│   ├── pipeline/        # Intermediate outputs (per stem)
+│   └── reports/         # Final HTML/PPTX reports
+└── scripts/             # Execution & test scripts
 ```
 
 ---
 
-## Lưu ý
+## Deterministic Scripts — NEVER Rewrite These
 
-- Không cần phân tích predictive (forecast). Chỉ cần descriptive + recommendation.
-- Report phải đọc được trong 2 phút — ưu tiên bảng và bullet points, không viết dài.
-- Nếu một mã thiếu data (thị trường nghỉ, lỗi fetch), bỏ qua và note trong report.
-- Sau khi tạo report xong, ghi ngày mới nhất của data vào `logs/last_analyzed.txt`.
+These scripts are the single source of truth for output generation. Always call them directly. Never write equivalent code from scratch in an agent or skill — doing so bypasses the template, theme, and SWD rules they enforce.
 
-## Token efficiency — BẮT BUỘC tuân theo
+| Task | Script | Called by skill | Key flag |
+|------|--------|-----------------|----------|
+| Render chart PNGs (matplotlib/SWD) | `scripts/render_charts_swd.py` | `chart-render` | `--stem {stem} --no-title` |
+| Build PPTX from template | `scripts/build_pptx_v3.py` | `slide-builder` | `--stem {stem} --output ...` |
+| Build HTML report | `scripts/render_html.py` | `html-report` | `--stem {stem} --output ...` |
 
-- **Không chạy full pipeline ai_analyst** — chỉ dùng đúng 3 agent: `descriptive-analyst`, `story-builder`, `html-report`. Bỏ qua tất cả agent khác.
-- **Không đọc reference docs** của skill trừ khi thực sự cần — ưu tiên dùng kiến thức sẵn có.
-- **Không giải thích từng bước** trong quá trình chạy — chỉ báo khi xong hoặc khi có lỗi.
+**Running on Windows:** Always set `PYTHONPATH` to the repo root parent before calling any script:
+```powershell
+$env:PYTHONPATH = "c:\This PC\the future analyst\AIDA\AIDA-All\AIDA"
+python scripts/build_pptx_v3.py --stem {stem} --output data/reports/revenue/{stem}/slidedeck.pptx
+```
+
+**Why `build_pptx_v3.py` must be used:** It loads `templates/pptx_report/pptx_report_template.pptx` as the base presentation, which carries the Office theme (fonts, colors, corner radius). Any agent writing python-pptx from scratch will produce a file that looks completely different from the intended design.
+
+**Why `render_charts_swd.py` must be used:** It enforces all SWD (Storytelling with Data) visual rules in code — no gridlines, single highlight color, spine-only axes. A chart generated outside this script will not match the template visual style.
+
+**Prerequisite for `build_pptx_v3.py`:** `story_arc.json` must have a `data` field on every `chart_requirements[]` entry before running `render_charts_swd.py`. If `data` fields are missing, run `data-storytelling` skill first to embed them.
+
+---
+
+## Reference Documents
+
+Technical details live in the skill/agent files themselves — read on-demand:
+
+| What you need | Where to read |
+|---------------|---------------|
+| Pipeline execution order | `config/registry.yaml` · `config/pipelines.yaml` |
+| Skill inputs/outputs/rules | `.claude/skills/{skill-name}/SKILL.md` |
+| Agent responsibilities | `.claude/agents/{agent-name}.md` |
+| Domain KPI rules | `config/domains/domain_rules.md` |
+| Helper API | `helpers/__init__.py` (exports) |
+| Chart style rules | `.claude/skills/chart-render/references/` |
+| Slide layout specs | `.claude/skills/slide-builder/references/pptx_layouts.md` |
+| HTML report_context schema | `.claude/skills/html-report/references/report_context_schema.md` |
+| Theme system | `themes/_base.yaml` · `themes/theme_loader.py` |
