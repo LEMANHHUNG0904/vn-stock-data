@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>VN Stock Report — 2026-07-26</title>
+<style>
+  :root {
+    --green: #1e7a34; --green-bg: #e6f4ea;
+    --red: #b3261e; --red-bg: #fdecea;
+    --gray: #5f6368; --border: #e0e0e0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    max-width: 880px; margin: 0 auto; padding: 32px 20px 60px;
+    color: #202124; background: #fff;
+  }
+  h1 { font-size: 22px; margin-bottom: 2px; }
+  .subtitle { color: var(--gray); font-size: 13px; margin-bottom: 24px; }
+  h2 { font-size: 16px; margin-top: 32px; margin-bottom: 10px; border-left: 4px solid #202124; padding-left: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid var(--border); }
+  th:first-child, td:first-child { text-align: left; }
+  th { background: #f5f5f5; font-weight: 600; color: var(--gray); }
+  tr.pos { background: var(--green-bg); }
+  tr.neg { background: var(--red-bg); }
+  .ticker { font-weight: 700; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .badge.pos { background: var(--green); color: #fff; }
+  .badge.neg { background: var(--red); color: #fff; }
+  .cards { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; }
+  .card { flex: 1 1 250px; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .card .rank { font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: .04em; }
+  .card .ticker { font-size: 20px; }
+  .card .metric { font-size: 12px; color: var(--gray); margin-top: 4px; }
+  .top .card { border-top: 3px solid var(--green); }
+  .bottom .card { border-top: 3px solid var(--red); }
+  .mid .card { border-top: 3px solid #9aa0a6; }
+  .note { color: var(--gray); font-size: 11px; margin-top: 40px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .alert { background: var(--red-bg); border: 1px solid var(--red); border-radius: 8px; padding: 12px 16px; font-size: 13px; margin: 16px 0; }
+</style>
+</head>
+<body>
+
+<h1>VN Stock Briefing — 26/07/2026</h1>
+<div class="subtitle">Dữ liệu tính đến 24/07/2026 · Cửa sổ phân tích: 30 ngày gần nhất (24/06 – 24/07/2026) · 10 mã theo dõi</div>
+
+<div class="alert">
+  <b>⚠️ Thị trường điều chỉnh diện rộng:</b> 9/10 mã theo dõi giảm giá trong 30 ngày qua. Chỉ VNM giữ được đà tăng.
+</div>
+
+<h2>Top 3 — Nên xem xét</h2>
+<div class="cards top">
+  <div class="card">
+    <div class="rank">#1</div>
+    <div class="ticker">VNM</div>
+    <div class="metric">Return 30D: <b style="color:var(--green)">+4.34%</b></div>
+    <div class="metric">Volatility: 1.54% · Trend: ↑ Tăng</div>
+    <div class="metric">Volume: Tăng mạnh (+44.4%)</div>
+  </div>
+  <div class="card">
+    <div class="rank">#2</div>
+    <div class="ticker">VIC</div>
+    <div class="metric">Return 30D: <b style="color:var(--red)">-7.55%</b></div>
+    <div class="metric">Volatility: 2.44% · Trend: ↓ Giảm</div>
+    <div class="metric">Volume: Tăng mạnh (+24.3%)</div>
+  </div>
+  <div class="card">
+    <div class="rank">#3</div>
+    <div class="ticker">VHM</div>
+    <div class="metric">Return 30D: <b style="color:var(--red)">-15.41%</b></div>
+    <div class="metric">Volatility: 2.69% · Trend: ↓ Giảm</div>
+    <div class="metric">Volume: Giảm mạnh (-16.3%)</div>
+  </div>
+</div>
+<div class="metric" style="margin-top:8px; color:var(--gray); font-size:12px;">
+  * Xếp hạng theo score risk-adjusted (return/volatility) — "nên xem xét" nghĩa là tương đối tốt nhất trong nhóm, không phải chắc chắn dương.
+</div>
+
+<h2>Bảng tổng quan 10 mã</h2>
+<table>
+  <tr><th>Mã</th><th>Giá đóng cửa</th><th>Return 30D</th><th>Volatility</th><th>Trend</th><th>Volume trend</th><th>Phân loại</th></tr>
+  <tr class="pos"><td class="ticker">VNM</td><td>58.90</td><td>+4.34%</td><td>1.54%</td><td>↑ Tăng</td><td>Tăng mạnh (+44.4%)</td><td><span class="badge pos">Top</span></td></tr>
+  <tr class="neg"><td class="ticker">VIC</td><td>213.10</td><td>-7.55%</td><td>2.44%</td><td>↓ Giảm</td><td>Tăng mạnh (+24.3%)</td><td><span class="badge pos">Top</span></td></tr>
+  <tr class="neg"><td class="ticker">VHM</td><td>130.00</td><td>-15.41%</td><td>2.69%</td><td>↓ Giảm</td><td>Giảm mạnh (-16.3%)</td><td><span class="badge pos">Top</span></td></tr>
+  <tr class="neg"><td class="ticker">MBB</td><td>21.90</td><td>-8.18%</td><td>1.40%</td><td>↓ Giảm</td><td>Tăng nhẹ (+7.7%)</td><td>Mid</td></tr>
+  <tr class="neg"><td class="ticker">FPT</td><td>62.90</td><td>-11.16%</td><td>1.75%</td><td>↓ Giảm</td><td>Tăng mạnh (+24.9%)</td><td>Mid</td></tr>
+  <tr class="neg"><td class="ticker">TCB</td><td>28.60</td><td>-12.00%</td><td>1.70%</td><td>↓ Giảm</td><td>Tăng nhẹ (+0.3%)</td><td>Mid</td></tr>
+  <tr class="neg"><td class="ticker">VCB</td><td>54.10</td><td>-10.56%</td><td>1.32%</td><td>↓ Giảm</td><td>Tăng mạnh (+32.1%)</td><td>Mid</td></tr>
+  <tr class="neg"><td class="ticker">HPG</td><td>20.80</td><td>-11.49%</td><td>1.39%</td><td>↓ Giảm</td><td>Tăng mạnh (+68.9%)</td><td><span class="badge neg">Bottom</span></td></tr>
+  <tr class="neg"><td class="ticker">MSN</td><td>63.90</td><td>-10.63%</td><td>1.25%</td><td>↓ Giảm</td><td>Tăng nhẹ (+6.2%)</td><td><span class="badge neg">Bottom</span></td></tr>
+  <tr class="neg"><td class="ticker">BID</td><td>36.00</td><td>-13.50%</td><td>1.43%</td><td>↓ Giảm</td><td>Tăng mạnh (+13.4%)</td><td><span class="badge neg">Bottom</span></td></tr>
+</table>
+
+<h2>Bottom 3 — Tránh / Chờ</h2>
+<div class="cards bottom">
+  <div class="card">
+    <div class="rank">#8</div>
+    <div class="ticker">HPG</div>
+    <div class="metric">Return 30D: <b style="color:var(--red)">-11.49%</b>, Volume tăng mạnh +68.9% (bán tháo)</div>
+  </div>
+  <div class="card">
+    <div class="rank">#9</div>
+    <div class="ticker">MSN</div>
+    <div class="metric">Return 30D: <b style="color:var(--red)">-10.63%</b>, thanh khoản ổn định</div>
+  </div>
+  <div class="card">
+    <div class="rank">#10</div>
+    <div class="ticker">BID</div>
+    <div class="metric">Return 30D: <b style="color:var(--red)">-13.50%</b>, mã giảm mạnh nhất nhóm</div>
+  </div>
+</div>
+
+<div class="note">
+  Auto-generated bởi VN Stock Pipeline · Score xếp hạng = Return 30D / Volatility (risk-adjusted) · Không phải khuyến nghị đầu tư.
+</div>
+
+</body>
+</html>
